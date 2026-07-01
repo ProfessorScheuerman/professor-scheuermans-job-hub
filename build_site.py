@@ -129,6 +129,7 @@ TEMPLATE = """<!DOCTYPE html>
   .badge-new {{ background:var(--new); color:#052e16; font-weight:700; }}
   .badge-emp {{ background:#3b2f0b; color:#fbbf24; font-weight:600; }}
   .badge-intern {{ background:#2e1065; color:#c4b5fd; font-weight:600; }}
+  .badge-entry {{ background:#0b3b2f; color:#34d399; font-weight:600; }}
   .empty {{ text-align:center; color:var(--muted); padding:40px; }}
   footer {{ text-align:center; color:var(--muted); font-size:.8rem; padding:20px; }}
 </style>
@@ -146,6 +147,7 @@ TEMPLATE = """<!DOCTYPE html>
       <button class="chip active" data-type="All">All</button>
       <button class="chip" data-type="__NEW__">New today</button>
       <button class="chip" data-type="__INTERN__">Internships</button>
+      <button class="chip" data-type="__ENTRY__">No experience needed</button>
       <button class="chip" data-type="__EMPLOYER__">&#9733; Local employers</button>
       {type_buttons}
     </div>
@@ -174,6 +176,7 @@ TEMPLATE = """<!DOCTYPE html>
     const shown = JOBS.filter(j => {{
       if (activeType === "__NEW__") {{ if (j.first_seen !== TODAY) return false; }}
       else if (activeType === "__INTERN__") {{ if (j.internship !== "yes") return false; }}
+      else if (activeType === "__ENTRY__") {{ if (j.entry_level !== "yes") return false; }}
       else if (activeType === "__EMPLOYER__") {{ if (!j.employer) return false; }}
       else if (activeType !== "All") {{ if (j.type !== activeType) return false; }}
       if (q) {{
@@ -196,6 +199,7 @@ TEMPLATE = """<!DOCTYPE html>
           ${{isNew ? '<span class="tag badge-new">NEW</span>' : ''}}
           ${{j.employer ? '<span class="tag badge-emp">&#9733; ' + esc(j.employer) + '</span>' : ''}}
           ${{j.internship === "yes" ? '<span class="tag badge-intern">Internship</span>' : ''}}
+          ${{j.entry_level === "yes" ? '<span class="tag badge-entry">No exp needed</span>' : ''}}
           ${{esc(j.company)}} &middot; ${{esc(j.location)}}${{posted}}
         </div>
       </div>`;

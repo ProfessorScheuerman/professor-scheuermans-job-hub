@@ -39,13 +39,14 @@ NEW_CSV = os.path.join(HERE, "new_jobs.csv")
 LOG_FILE = os.path.join(HERE, "update_log.txt")
 
 FIELDS = ["first_seen", "title", "company", "location", "source",
-          "posted", "employer", "internship", "url"]
+          "posted", "employer", "internship", "entry_level", "url"]
 
 
 def normalize(job, source):
     """Turn a source-specific job dict into our common shape, adding tags."""
     title = job.get("title", "")
     company = job.get("company", "")
+    description = job.get("description", "")
     # "employer" is set if this is one of our watched local employers -- either
     # the employer source already tagged it, or the company name matches.
     employer = job.get("employer", "") or find_jobs_employers.match_employer(company)
@@ -57,6 +58,8 @@ def normalize(job, source):
         "posted": job.get("posted", ""),       # Adzuna has a date; Muse doesn't
         "employer": employer,
         "internship": "yes" if "intern" in title.lower() else "",
+        # Tag roles that look like they need no experience beyond school.
+        "entry_level": "yes" if find_jobs_adzuna.is_entry_level(title, description) else "",
         "url": job.get("url", ""),
     }
 

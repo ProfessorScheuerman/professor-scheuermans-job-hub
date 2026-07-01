@@ -31,8 +31,12 @@ import urllib.request
 # SETTINGS -- tweak these to change what we search for
 # ---------------------------------------------------------------------------
 
-# Cities to accept. The Muse tags jobs with "City, ST" strings.
-LOCATIONS = ["Las Vegas, NV", "Henderson, NV"]
+# Cities to accept. The Muse tags jobs with "City, ST" strings. We list the
+# Southern Nevada cities The Muse is most likely to have postings for.
+LOCATIONS = [
+    "Las Vegas, NV", "Henderson, NV", "North Las Vegas, NV",
+    "Boulder City, NV", "Mesquite, NV", "Pahrump, NV", "Laughlin, NV",
+]
 
 # Keywords that mark a job as networking / cybersecurity related.
 # A job is kept if ANY of these appear in its title.
@@ -144,6 +148,7 @@ def collect_jobs():
                     "company": company,
                     "location": locs,
                     "category": category,
+                    "description": job.get("contents", "") or "",
                     "url": link,
                 })
 

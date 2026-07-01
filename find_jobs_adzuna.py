@@ -39,7 +39,9 @@ except ImportError:
 
 COUNTRY = "us"
 WHERE = "Las Vegas, Nevada"     # center point of the search
-DISTANCE_KM = 40                # radius -- 40 km covers Henderson too
+DISTANCE_KM = 160               # wide enough to cover all of Southern Nevada
+                                # (Boulder City, Mesquite, Pahrump, Laughlin...).
+                                # A location filter below keeps out AZ/CA towns.
 RESULTS_PER_PAGE = 50
 MAX_PAGES = 3
 
@@ -58,12 +60,38 @@ SEARCH_TERMS = [
     "network intern",
     "information technology intern",
     "help desk intern",
+    # Entry-level / no-experience searches (school-only roles for students).
+    "entry level IT support",
+    "IT trainee",
+    "junior network",
+    "help desk no experience",
+]
+
+# A job counts as "Southern Nevada" only if its location text contains one of
+# these. Adzuna labels locations as "City, County County", so matching on the
+# four Southern Nevada COUNTY names is the reliable way to include every SN city
+# while excluding Arizona/California border towns (e.g. "..., Mohave County" AZ
+# or "..., San Bernardino County" CA). ", nv" / "nevada" are safety fallbacks.
+SOUTHERN_NEVADA = [
+    "clark county", "nye county", "lincoln county", "esmeralda county",
+    ", nv", "nevada",
+]
+
+# Words that suggest a role needs no experience beyond school. Matched against
+# the job title + description snippet. Used only to TAG jobs, not to drop them.
+ENTRY_LEVEL_SIGNALS = [
+    "no experience", "no prior experience", "no experience necessary",
+    "no experience required", "entry level", "entry-level", "will train",
+    "we will train", "training provided", "on-the-job training", "on the job training",
+    "recent graduate", "recent grad", "new graduate", "new grad",
+    "students welcome", "currently enrolled", "pursuing a degree",
+    "0-1 year", "0 to 1 year", "junior", "trainee", "apprentice", "intern",
 ]
 
 # Drop obviously-too-senior roles (same idea as the Muse script).
 SENIORITY_BLOCKLIST = [
     "senior", "sr.", "sr ", "staff", "principal", "lead", "manager", "mgr",
-    "director", "head of", "vp", "vice president", "architect", "iii",
+    "director", "head of", "vp", "vice president", "architect", "iii", "supervisor",
 ]
 
 # PHYSICAL-security / guard roles match the word "security" but are NOT the
@@ -127,6 +155,18 @@ def is_relevant(title):
     return any(kw in low for kw in RELEVANT_KEYWORDS)
 
 
+def in_southern_nevada(location):
+    """True if the location text looks like a Southern Nevada city/county."""
+    low = (location or "").lower()
+    return any(place in low for place in SOUTHERN_NEVADA)
+
+
+def is_entry_level(title, description=""):
+    """True if title/description suggest no experience beyond school is needed."""
+    text = f"{title} {description}".lower()
+    return any(sig in text for sig in ENTRY_LEVEL_SIGNALS)
+
+
 def collect_jobs():
     seen = set()
     kept = []
@@ -150,6 +190,10 @@ def collect_jobs():
                 if is_too_senior(title):
                     continue
 
+                location = job.get("location", {}).get("display_name", "")
+                if not in_southern_nevada(location):
+                    continue                       # skip AZ/CA border towns
+
                 link = job.get("redirect_url", "")
                 if link in seen:
                     continue
@@ -158,9 +202,10 @@ def collect_jobs():
                 kept.append({
                     "title": title,
                     "company": job.get("company", {}).get("display_name", ""),
-                    "location": job.get("location", {}).get("display_name", ""),
+                    "location": location,
                     "posted": job.get("created", "")[:10],   # just the date part
                     "matched_search": term,
+                    "description": job.get("description", ""),
                     "url": link,
                 })
 

@@ -20,7 +20,7 @@ TO ADD AN EMPLOYER: copy a line below. "search" is what we type into Adzuna;
 """
 
 # We reuse the Adzuna search + filters we already wrote.
-from find_jobs_adzuna import search, is_relevant, is_too_senior
+from find_jobs_adzuna import search, is_relevant, is_too_senior, in_southern_nevada
 
 # name    = how it's shown to students
 # search  = the phrase sent to Adzuna
@@ -75,6 +75,10 @@ def collect_jobs():
             if not is_relevant(title) or is_too_senior(title):
                 continue
 
+            location = job.get("location", {}).get("display_name", "")
+            if not in_southern_nevada(location):
+                continue
+
             link = job.get("redirect_url", "")
             if link in seen:
                 continue
@@ -83,9 +87,10 @@ def collect_jobs():
             kept.append({
                 "title": title,
                 "company": company,
-                "location": job.get("location", {}).get("display_name", ""),
+                "location": location,
                 "posted": job.get("created", "")[:10],
                 "employer": emp["name"],
+                "description": job.get("description", ""),
                 "url": link,
             })
 
