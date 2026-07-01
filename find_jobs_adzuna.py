@@ -22,6 +22,7 @@ Then run:
 
 import csv
 import json
+import re
 import urllib.parse
 import urllib.request
 
@@ -162,9 +163,27 @@ def in_southern_nevada(location):
 
 
 def is_entry_level(title, description=""):
-    """True if title/description suggest no experience beyond school is needed."""
+    """True if the role looks doable with no experience beyond school.
+
+    Two guards keep this honest:
+      1. WHOLE-WORD matching, so "intern" doesn't match "internal"/"external"
+         and "junior" doesn't match inside another word.
+      2. An EXPERIENCE OVERRIDE: if the posting asks for 1+ years of experience,
+         we never tag it -- unless the range starts at 0 (e.g. "0-1 years").
+    """
     text = f"{title} {description}".lower()
-    return any(sig in text for sig in ENTRY_LEVEL_SIGNALS)
+
+    # Does it explicitly require 1+ years of experience? (e.g. "1-2 years",
+    # "2+ years", "minimum 3 years"). We only treat it as a requirement when the
+    # word "experience" is also present, so we don't trip on "2 years of college".
+    asks_for_years = re.search(r"\b[1-9]\d*\s*\+?\s*(?:to|-)?\s*\d*\s*years?\b", text)
+    zero_based = re.search(r"\b0\s*(?:to|-)\s*\d+\s*years?\b", text)  # "0-1 years"
+    if asks_for_years and "experien" in text and not zero_based:
+        return False
+
+    # Otherwise tag it only if a whole-word entry-level signal appears.
+    return any(re.search(r"\b" + re.escape(sig) + r"\b", text)
+               for sig in ENTRY_LEVEL_SIGNALS)
 
 
 def collect_jobs():
