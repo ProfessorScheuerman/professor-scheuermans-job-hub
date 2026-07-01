@@ -1,0 +1,13 @@
+# --- SECRETS: never commit these (API keys + email password) ---
+config.py
+
+# --- Runtime data & logs (regenerated every run, not needed on GitHub) ---
+seen_jobs.json
+*.csv
+*.log
+update_log.txt
+
+# --- macOS / Python cruft ---
+.DS_Store
+__pycache__/
+*.pyc
