@@ -40,7 +40,10 @@ LOCAL_EMPLOYERS = [
     {"name": "UNLV",              "search": "University of Nevada Las Vegas", "match": ["university of nevada"]},
     {"name": "Clark County",      "search": "Clark County Nevada", "match": ["clark county"]},
     {"name": "City of Henderson", "search": "City of Henderson",   "match": ["city of henderson"]},
+    {"name": "City of North Las Vegas", "search": "City of North Las Vegas", "match": ["city of north las vegas"]},
     {"name": "State of Nevada",   "search": "State of Nevada",     "match": ["state of nevada"]},
+    {"name": "Link Technologies", "search": "Link Technologies",   "match": ["link technologies", "link tech"]},
+    {"name": "IGT",               "search": "International Game Technology", "match": ["international game technology", "igt"]},
 ]
 
 
