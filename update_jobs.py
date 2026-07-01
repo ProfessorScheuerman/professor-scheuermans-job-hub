@@ -149,6 +149,18 @@ def main():
     # Rebuild the public web page from the full list.
     build_site.build(all_rows)
 
+    # Publish the updated page to GitHub Pages (the live student site).
+    try:
+        import subprocess
+        r = subprocess.run(["/bin/bash", os.path.join(HERE, "publish.sh")],
+                           capture_output=True, text=True, timeout=120)
+        if r.stdout.strip():
+            print(r.stdout.strip())
+        if r.returncode != 0 and r.stderr.strip():
+            print("  ! publish:", r.stderr.strip())
+    except Exception as e:
+        print(f"  ! publish step skipped: {e}")
+
     # Email a digest of just the new jobs (does nothing if email isn't set up).
     try:
         notify_email.send(new_rows)
